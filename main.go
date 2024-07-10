@@ -151,7 +151,7 @@ func handleGet(w http.ResponseWriter, r *http.Request, repository repo.Repositor
 }
 
 func getFilePath(r *http.Request, repository repo.Repository) string {
-	if strings.Contains(r.URL.Path, "..") {
+	if strings.Contains(r.URL.Path, "../") {
 		return ""
 	}
 
