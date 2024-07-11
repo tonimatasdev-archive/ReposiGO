@@ -1,15 +1,19 @@
 package main
 
 import (
+	"bufio"
 	"container/list"
 	"encoding/base64"
 	"fmt"
 	"github.com/TonimatasDEV/ReposiGO/repo"
+	"github.com/TonimatasDEV/ReposiGO/token"
 	"io"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
 
 var repositories = list.New()
@@ -42,12 +46,61 @@ func main() {
 		}
 	}
 
-	fmt.Println("Server listening on port 8080")
-
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		return
+	session, createUserErr := token.SessionInit("test")
+	if createUserErr != nil {
+		fmt.Println("Error creating the session:", createUserErr)
+	} else {
+		fmt.Println(session.Username)
+		fmt.Println(session.Token)
 	}
+
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: http.DefaultServeMux,
+	}
+
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			return
+		}
+
+		fmt.Println("Server listening on port 8080")
+	}()
+
+	go func() {
+		stopChan := make(chan os.Signal, 1)
+		signal.Notify(stopChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+		select {
+		case <-stopChan:
+			stop(server)
+		}
+	}()
+
+	inputReader := bufio.NewReader(os.Stdin)
+
+	for {
+		rawCommand, err := inputReader.ReadString('\n')
+
+		command := strings.Replace(rawCommand, "\n", "", -1)
+
+		if err != nil {
+			fmt.Println("Exception on read the command:", err)
+		}
+
+		if command == "exit" || command == "stop" {
+			stop(server)
+		}
+
+		fmt.Println("Command:", command)
+	}
+}
+
+func stop(server *http.Server) {
+	fmt.Println("ReposiGO stopped successfully.")
+	_ = server.Close()
+	os.Exit(0)
 }
 
 func auth(repository repo.Repository) http.HandlerFunc {
