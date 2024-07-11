@@ -1,4 +1,4 @@
-package token
+package session
 
 import (
 	"crypto/rand"
@@ -6,13 +6,15 @@ import (
 )
 
 type Session struct {
-	Username string
-	Token    string
+	Username    string
+	Token       string
+	ReadAccess  []string
+	WriteAccess []string
 }
 
-func SessionInit(username string) (Session, error) {
+func SessionInit(username string, readAccess []string, writeAccess []string) (Session, error) {
 	token, err := generateRandomToken(64)
-	session := Session{username, token}
+	session := Session{username, token, readAccess, writeAccess}
 
 	if err != nil {
 		return session, err
