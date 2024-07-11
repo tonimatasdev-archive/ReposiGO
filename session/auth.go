@@ -3,9 +3,9 @@ package session
 import (
 	"container/list"
 	"encoding/base64"
-	"fmt"
 	"github.com/TonimatasDEV/ReposiGO/repo"
 	"github.com/TonimatasDEV/ReposiGO/utils"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -46,6 +46,6 @@ func CheckAuth(sessions *list.List, auth string, r *http.Request, repository rep
 		}
 	}
 
-	fmt.Println("Credenciales incorrectas")
+	log.Println("Credenciales incorrectas")
 	return false
 }

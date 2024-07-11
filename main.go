@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"container/list"
-	"fmt"
 	"github.com/TonimatasDEV/ReposiGO/repo"
 	"github.com/TonimatasDEV/ReposiGO/session"
 	"github.com/TonimatasDEV/ReposiGO/utils"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -33,10 +33,10 @@ func main() {
 
 	session, createUserErr := session.SessionInit("test", []string{"*"}, []string{"*"})
 	if createUserErr != nil {
-		fmt.Println("Error creating the session:", createUserErr)
+		log.Println("Error creating the session:", createUserErr)
 	} else {
-		fmt.Println(session.Username)
-		fmt.Println(session.Token)
+		log.Println(session.Username)
+		log.Println(session.Token)
 		sessions.PushFront(session)
 	}
 
@@ -52,7 +52,7 @@ func main() {
 		}
 	}()
 
-	fmt.Println("Server listening on port 8080")
+	log.Println("Server listening on port 8080")
 
 	go func() {
 		stopChan := make(chan os.Signal, 1)
@@ -72,24 +72,27 @@ func main() {
 		command := strings.Replace(rawCommand, "\n", "", -1)
 
 		if err != nil {
-			fmt.Println("Exception on read the command:", err)
+			log.Println("Exception on read the command:", err)
 		}
 
 		if command == "exit" || command == "stop" {
 			stop(server)
 		}
 
-		fmt.Println("Command:", command)
+		log.Println("Command:", command)
 	}
 }
 
 func stop(server *http.Server) {
-	fmt.Println("ReposiGO stopped successfully.")
+	log.Println("ReposiGO stopped successfully.")
 	_ = server.Close()
 	os.Exit(0)
 }
 
 func handleRequest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "Thu, 01 Jan 1970 00:00:00 GMT")
 	found := false
 	var repository repo.Repository
 
@@ -110,8 +113,6 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	if !found {
 		repository = primaryRepository
 	}
-
-	fmt.Println(repository.Name)
 
 	if repository.Type == repo.Private || r.Method == http.MethodPut {
 		if !session.CheckAuth(sessions, r.Header.Get("Authorization"), r, repository) {
