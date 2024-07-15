@@ -31,13 +31,13 @@ func main() {
 
 	http.HandleFunc("/", handleRequest)
 
-	session, createUserErr := session.SessionInit("test", []string{"*"}, []string{"*"})
+	user, createUserErr := session.Init("test", []string{"*"}, []string{"*"})
 	if createUserErr != nil {
 		log.Println("Error creating the session:", createUserErr)
 	} else {
-		log.Println(session.Username)
-		log.Println(session.Token)
-		sessions.PushFront(session)
+		log.Println(user.Username)
+		log.Println(user.Token)
+		sessions.PushFront(user)
 	}
 
 	server := &http.Server{
@@ -152,7 +152,7 @@ func handlePut(w http.ResponseWriter, r *http.Request, repository repo.Repositor
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer file.Close()
+	defer utils.File(file)
 
 	_, err = io.Copy(file, r.Body)
 	if err != nil {
@@ -179,7 +179,7 @@ func handleGet(w http.ResponseWriter, r *http.Request, repository repo.Repositor
 		}
 		return
 	}
-	defer file.Close()
+	defer utils.File(file)
 
 	http.ServeFile(w, r, filePath)
 }

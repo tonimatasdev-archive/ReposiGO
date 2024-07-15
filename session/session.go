@@ -12,7 +12,7 @@ type Session struct {
 	WriteAccess []string
 }
 
-func SessionInit(username string, readAccess []string, writeAccess []string) (Session, error) {
+func Init(username string, readAccess []string, writeAccess []string) (Session, error) {
 	token, err := generateRandomToken(64)
 	session := Session{username, token, readAccess, writeAccess}
 
