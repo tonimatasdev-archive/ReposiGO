@@ -19,6 +19,13 @@ func CreateSession(username string, readAccess []string, writeAccess []string) {
 	if err != nil {
 		log.Println("Error creating the session.")
 	} else {
+		value := sessions[username]
+
+		if value.Username == username {
+			log.Println("Session \"" + username + "\" already exists.")
+			return
+		}
+
 		sessions[username] = Session{username, token, readAccess, writeAccess}
 		log.Println("Session created successfully.")
 	}

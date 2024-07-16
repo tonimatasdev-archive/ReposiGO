@@ -45,7 +45,9 @@ func Console(server *http.Server) {
 		case "session":
 			handleSession(split)
 		default:
-			log.Println("Unknown command \"" + label + "\".")
+			if command != "" {
+				log.Println("Unknown command \"" + label + "\".")
+			}
 		}
 	}
 }
