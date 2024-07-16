@@ -3,6 +3,7 @@ package session
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"log"
 )
 
 type Session struct {
@@ -12,19 +13,25 @@ type Session struct {
 	WriteAccess []string
 }
 
-func CreateSession(username string, readAccess []string, writeAccess []string) (Session, error) {
+func CreateSession(username string, readAccess []string, writeAccess []string) {
 	token, err := generateRandomToken(64)
-	session := Session{username, token, readAccess, writeAccess}
 
 	if err != nil {
-		return session, err
+		log.Println("Error creating the session.")
+	} else {
+		sessions[username] = Session{username, token, readAccess, writeAccess}
+		log.Println("Session created successfully.")
 	}
-
-	return session, nil
 }
 
-func DeleteSession(sessions []Session, username string) []Session {
-	return nil
+func DeleteSession(username string) {
+	value := sessions[username]
+
+	if value.Username == "" {
+		log.Println("Session", "\""+username+"\"", "not found.")
+	} else {
+		delete(sessions, username)
+	}
 }
 
 func generateRandomToken(n int) (string, error) {

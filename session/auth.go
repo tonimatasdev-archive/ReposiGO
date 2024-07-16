@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func CheckAuth(sessions []Session, auth string, r *http.Request, repository repo.Repository) bool {
+func CheckAuth(auth string, r *http.Request, repository repo.Repository) bool {
 	if auth == "" {
 		return false
 	}

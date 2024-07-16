@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bufio"
+	"github.com/TonimatasDEV/ReposiGO/console"
 	"github.com/TonimatasDEV/ReposiGO/repo"
 	"github.com/TonimatasDEV/ReposiGO/session"
 	"github.com/TonimatasDEV/ReposiGO/utils"
@@ -9,15 +9,14 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strings"
-	"syscall"
 )
 
-var repositories []repo.Repository
-var sessions []session.Session
-var primaryRepository repo.Repository
+var (
+	repositories      []repo.Repository
+	primaryRepository repo.Repository
+)
 
 func main() {
 	releaseRepository := repo.RepositoryInit("Releases", "releases", repo.Public, true)
@@ -29,15 +28,6 @@ func main() {
 	repositories = append(repositories, privateRepository)
 
 	http.HandleFunc("/", handleRequest)
-
-	user, createUserErr := session.CreateSession("test", []string{"*"}, []string{"*"})
-	if createUserErr != nil {
-		log.Println("Error creating the session:", createUserErr)
-	} else {
-		log.Println(user.Username)
-		log.Println(user.Token)
-		sessions = append(sessions, user)
-	}
 
 	server := &http.Server{
 		Addr:    ":8080",
@@ -51,44 +41,9 @@ func main() {
 		}
 	}()
 
-	log.Println("Server listening on port 8080")
+	log.Println("Server listening on port 8080.")
 
-	go func() {
-		stopChan := make(chan os.Signal, 1)
-		signal.Notify(stopChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-
-		select {
-		case <-stopChan:
-			stop(server)
-		}
-	}()
-
-	inputReader := bufio.NewReader(os.Stdin)
-
-	for {
-		rawCommand, err := inputReader.ReadString('\n')
-
-		command := strings.Replace(rawCommand, "\n", "", -1)
-
-		if err != nil {
-			log.Println("Exception on read the command:", err)
-		}
-
-		switch command {
-		case "quit", "exit", "stop":
-			stop(server)
-		case "create-session":
-
-		}
-
-		log.Println("Command:", command)
-	}
-}
-
-func stop(server *http.Server) {
-	log.Println("ReposiGO stopped successfully.")
-	_ = server.Close()
-	os.Exit(0)
+	console.Console(server)
 }
 
 func handleRequest(w http.ResponseWriter, r *http.Request) {
@@ -111,7 +66,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if repository.Type == repo.Private || r.Method == http.MethodPut {
-		if !session.CheckAuth(sessions, r.Header.Get("Authorization"), r, repository) {
+		if !session.CheckAuth(r.Header.Get("Authorization"), r, repository) {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
