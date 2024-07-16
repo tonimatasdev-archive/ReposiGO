@@ -12,7 +12,7 @@ type Session struct {
 	WriteAccess []string
 }
 
-func Init(username string, readAccess []string, writeAccess []string) (Session, error) {
+func CreateSession(username string, readAccess []string, writeAccess []string) (Session, error) {
 	token, err := generateRandomToken(64)
 	session := Session{username, token, readAccess, writeAccess}
 
@@ -21,6 +21,10 @@ func Init(username string, readAccess []string, writeAccess []string) (Session, 
 	}
 
 	return session, nil
+}
+
+func DeleteSession(sessions []Session, username string) []Session {
+	return nil
 }
 
 func generateRandomToken(n int) (string, error) {

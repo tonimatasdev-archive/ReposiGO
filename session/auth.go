@@ -1,16 +1,14 @@
 package session
 
 import (
-	"container/list"
 	"encoding/base64"
 	"github.com/TonimatasDEV/ReposiGO/repo"
 	"github.com/TonimatasDEV/ReposiGO/utils"
-	"log"
 	"net/http"
 	"strings"
 )
 
-func CheckAuth(sessions *list.List, auth string, r *http.Request, repository repo.Repository) bool {
+func CheckAuth(sessions []Session, auth string, r *http.Request, repository repo.Repository) bool {
 	if auth == "" {
 		return false
 	}
@@ -30,13 +28,7 @@ func CheckAuth(sessions *list.List, auth string, r *http.Request, repository rep
 		return false
 	}
 
-	for e := sessions.Front(); e != nil; e = e.Next() {
-		value, ok := e.Value.(Session)
-
-		if !ok {
-			continue
-		}
-
+	for _, value := range sessions {
 		if parts[0] == value.Username && parts[1] == value.Token {
 			if r.Method == http.MethodPut && (utils.Contains(value.WriteAccess, repository.Id) || utils.Contains(value.ReadAccess, "*")) {
 				return true
@@ -46,6 +38,5 @@ func CheckAuth(sessions *list.List, auth string, r *http.Request, repository rep
 		}
 	}
 
-	log.Println("Credenciales incorrectas")
 	return false
 }

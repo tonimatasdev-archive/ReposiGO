@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"container/list"
 	"github.com/TonimatasDEV/ReposiGO/repo"
 	"github.com/TonimatasDEV/ReposiGO/session"
 	"github.com/TonimatasDEV/ReposiGO/utils"
@@ -16,8 +15,8 @@ import (
 	"syscall"
 )
 
-var repositories = list.New()
-var sessions = list.New()
+var repositories []repo.Repository
+var sessions []session.Session
 var primaryRepository repo.Repository
 
 func main() {
@@ -26,18 +25,18 @@ func main() {
 	privateRepository := repo.RepositoryInit("Private", "private", repo.Private, false)
 
 	primaryRepository = releaseRepository
-	repositories.PushFront(secretRepository)
-	repositories.PushFront(privateRepository)
+	repositories = append(repositories, secretRepository)
+	repositories = append(repositories, privateRepository)
 
 	http.HandleFunc("/", handleRequest)
 
-	user, createUserErr := session.Init("test", []string{"*"}, []string{"*"})
+	user, createUserErr := session.CreateSession("test", []string{"*"}, []string{"*"})
 	if createUserErr != nil {
 		log.Println("Error creating the session:", createUserErr)
 	} else {
 		log.Println(user.Username)
 		log.Println(user.Token)
-		sessions.PushFront(user)
+		sessions = append(sessions, user)
 	}
 
 	server := &http.Server{
@@ -75,8 +74,11 @@ func main() {
 			log.Println("Exception on read the command:", err)
 		}
 
-		if command == "exit" || command == "stop" {
+		switch command {
+		case "quit", "exit", "stop":
 			stop(server)
+		case "create-session":
+
 		}
 
 		log.Println("Command:", command)
@@ -96,13 +98,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	found := false
 	var repository repo.Repository
 
-	for e := repositories.Front(); e != nil; e = e.Next() {
-		value, ok := e.Value.(repo.Repository)
-
-		if !ok {
-			continue
-		}
-
+	for _, value := range repositories {
 		if strings.HasPrefix(r.URL.Path, "/"+value.Id+"/") {
 			found = true
 			repository = value
@@ -152,7 +148,7 @@ func handlePut(w http.ResponseWriter, r *http.Request, repository repo.Repositor
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer utils.File(file)
+	defer utils.FileError(file)
 
 	_, err = io.Copy(file, r.Body)
 	if err != nil {
@@ -179,7 +175,7 @@ func handleGet(w http.ResponseWriter, r *http.Request, repository repo.Repositor
 		}
 		return
 	}
-	defer utils.File(file)
+	defer utils.FileError(file)
 
 	http.ServeFile(w, r, filePath)
 }

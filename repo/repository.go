@@ -22,7 +22,7 @@ func (repo Repository) GetName() string {
 func RepositoryInit(name string, id string, repoType string, primary bool) Repository {
 	repo := Repository{name, id, repoType, primary}
 
-	_ = os.Mkdir(id, 0755)
+	_ = os.MkdirAll("repositories/"+id, 0755)
 
 	return repo
 }

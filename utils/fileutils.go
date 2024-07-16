@@ -12,8 +12,8 @@ func FilePath(r *http.Request, repository repo.Repository) string {
 	}
 
 	if repository.Primary {
-		return "./" + repository.Id + r.URL.Path
+		return "repositories/" + repository.Id + r.URL.Path
 	} else {
-		return "." + r.URL.Path
+		return "repositories/" + r.URL.Path
 	}
 }
