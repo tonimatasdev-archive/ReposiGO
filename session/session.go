@@ -27,7 +27,7 @@ func CreateSession(username string, readAccess []string, writeAccess []string) {
 		}
 
 		sessions[username] = Session{username, token, readAccess, writeAccess}
-		log.Println("Session created successfully.")
+		log.Println("Session \"" + username + "\" created successfully with the token \"" + token + "\".")
 	}
 }
 
