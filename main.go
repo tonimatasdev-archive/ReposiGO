@@ -46,12 +46,20 @@ func main() {
 	portStr := strconv.Itoa(config.Port)
 	server := &http.Server{
 		Addr:    ":" + portStr,
-		Handler: http.DefaultServeMux,
+		Handler: nil,
 	}
 
 	go func() {
-		err := server.ListenAndServe()
+		var err error
+
+		if config.CertFile == "none" || config.KeyFile == "none" {
+			err = server.ListenAndServe()
+		} else {
+			err = server.ListenAndServeTLS(config.CertFile, config.KeyFile)
+		}
+
 		if err != nil {
+			log.Fatal("Server starting error: ", err)
 			return
 		}
 	}()

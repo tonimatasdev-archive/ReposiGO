@@ -11,6 +11,8 @@ import (
 type Config struct {
 	Port         int          `json:"port"`
 	Primary      string       `json:"primaryRepository"`
+	CertFile     string       `json:"certFile"`
+	KeyFile      string       `json:"keyFile"`
 	Repositories []Repository `json:"repositories"`
 }
 
@@ -26,8 +28,10 @@ func LoadConfig() (*Config, error) {
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
 		log.Println("Config file not found, creating default configuration...")
 		defaultConfig := Config{
-			Port:    8080,
-			Primary: "releases",
+			Port:     8080,
+			Primary:  "releases",
+			CertFile: "none",
+			KeyFile:  "none",
 			Repositories: []Repository{
 				{"Releases", "releases", repo.Public},
 				{"Secret", "secret", repo.Secret},
