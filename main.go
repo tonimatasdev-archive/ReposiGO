@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/TonimatasDEV/ReposiGO/configuration"
 	"github.com/TonimatasDEV/ReposiGO/console"
 	"github.com/TonimatasDEV/ReposiGO/repo"
 	"github.com/TonimatasDEV/ReposiGO/session"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -19,18 +21,31 @@ var (
 )
 
 func main() {
-	releaseRepository := repo.RepositoryInit("Releases", "releases", repo.Public, true)
-	secretRepository := repo.RepositoryInit("Secret", "secret", repo.Secret, false)
-	privateRepository := repo.RepositoryInit("Private", "private", repo.Private, false)
+	config, err := configuration.LoadConfig()
 
-	primaryRepository = releaseRepository
-	repositories = append(repositories, secretRepository)
-	repositories = append(repositories, privateRepository)
+	if err != nil {
+		log.Fatal("Error loading configuration:", err)
+	}
+
+	for _, configRepository := range config.Repositories {
+		repository := repo.RepositoryInit(configRepository.Name, configRepository.Id, configRepository.Type)
+
+		if repository.Id == config.Primary {
+			primaryRepository = repository
+		} else {
+			repositories = append(repositories, repository)
+		}
+	}
+
+	if primaryRepository.Id != config.Primary {
+		log.Fatal("Primary repository not found.")
+	}
 
 	http.HandleFunc("/", handleRequest)
 
+	portStr := strconv.Itoa(config.Port)
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + portStr,
 		Handler: http.DefaultServeMux,
 	}
 
@@ -41,7 +56,7 @@ func main() {
 		}
 	}()
 
-	log.Println("Server listening on port 8080.")
+	log.Println("Server listening on port " + portStr + ".")
 
 	console.Console(server)
 }
@@ -84,7 +99,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlePut(w http.ResponseWriter, r *http.Request, repository repo.Repository) {
-	filePath := utils.FilePath(r, repository)
+	filePath := utils.FilePath(r, repository, primaryRepository)
 
 	if filePath == "" {
 		http.NotFound(w, r)
@@ -115,7 +130,7 @@ func handlePut(w http.ResponseWriter, r *http.Request, repository repo.Repositor
 }
 
 func handleGet(w http.ResponseWriter, r *http.Request, repository repo.Repository) {
-	filePath := utils.FilePath(r, repository)
+	filePath := utils.FilePath(r, repository, primaryRepository)
 
 	if filePath == "" {
 		http.NotFound(w, r)
