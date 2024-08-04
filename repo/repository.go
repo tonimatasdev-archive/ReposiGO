@@ -1,11 +1,20 @@
 package repo
 
-import "os"
+import (
+	"github.com/TonimatasDEV/ReposiGO/configuration"
+	"log"
+	"os"
+)
 
 const (
 	Public  = "PUBLIC"
 	Secret  = "SECRET"
 	Private = "PRIVATE"
+)
+
+var (
+	Repositories      []Repository
+	PrimaryRepository Repository
 )
 
 type Repository struct {
@@ -24,4 +33,22 @@ func RepositoryInit(name string, id string, repoType string) Repository {
 	_ = os.MkdirAll("repositories/"+id, 0755)
 
 	return repo
+}
+
+func InitRepositories() {
+	primary := configuration.ServerConfig.Primary
+
+	for _, configRepository := range configuration.ServerConfig.Repositories {
+		repository := RepositoryInit(configRepository.Name, configRepository.Id, configRepository.Type)
+
+		if repository.Id == primary {
+			PrimaryRepository = repository
+		} else {
+			Repositories = append(Repositories, repository)
+		}
+	}
+
+	if PrimaryRepository.Id != primary {
+		log.Fatal("Primary repository not found.")
+	}
 }

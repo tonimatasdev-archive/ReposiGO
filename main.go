@@ -15,11 +15,6 @@ import (
 	"strings"
 )
 
-var (
-	repositories      []repo.Repository
-	primaryRepository repo.Repository
-)
-
 func main() {
 	config, err := configuration.LoadConfig()
 
@@ -27,19 +22,9 @@ func main() {
 		log.Fatal("Error loading configuration:", err)
 	}
 
-	for _, configRepository := range config.Repositories {
-		repository := repo.RepositoryInit(configRepository.Name, configRepository.Id, configRepository.Type)
+	configuration.ServerConfig = *config
 
-		if repository.Id == config.Primary {
-			primaryRepository = repository
-		} else {
-			repositories = append(repositories, repository)
-		}
-	}
-
-	if primaryRepository.Id != config.Primary {
-		log.Fatal("Primary repository not found.")
-	}
+	repo.InitRepositories()
 
 	http.HandleFunc("/", handleRequest)
 
@@ -66,6 +51,8 @@ func main() {
 
 	log.Println("Server listening on port " + portStr + ".")
 
+	go session.BanHandler()
+
 	console.Console(server)
 }
 
@@ -76,7 +63,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	found := false
 	var repository repo.Repository
 
-	for _, value := range repositories {
+	for _, value := range repo.Repositories {
 		if strings.HasPrefix(r.URL.Path, "/"+value.Id+"/") {
 			found = true
 			repository = value
@@ -85,13 +72,15 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !found {
-		repository = primaryRepository
+		repository = repo.PrimaryRepository
 	}
 
 	if repository.Type == repo.Private || r.Method == http.MethodPut {
-		if !session.CheckAuth(r.Header.Get("Authorization"), r, repository) {
+		result, str, code := session.CheckAuth(r.Header.Get("Authorization"), r, repository)
+
+		if !result {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			http.Error(w, str, code)
 			return
 		}
 	}
@@ -107,7 +96,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlePut(w http.ResponseWriter, r *http.Request, repository repo.Repository) {
-	filePath := utils.FilePath(r, repository, primaryRepository)
+	filePath := utils.FilePath(r, repository)
 
 	if filePath == "" {
 		http.NotFound(w, r)
@@ -138,7 +127,7 @@ func handlePut(w http.ResponseWriter, r *http.Request, repository repo.Repositor
 }
 
 func handleGet(w http.ResponseWriter, r *http.Request, repository repo.Repository) {
-	filePath := utils.FilePath(r, repository, primaryRepository)
+	filePath := utils.FilePath(r, repository)
 
 	if filePath == "" {
 		http.NotFound(w, r)
