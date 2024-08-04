@@ -6,12 +6,12 @@ import (
 	"strings"
 )
 
-func FilePath(r *http.Request, repository repo.Repository, primary repo.Repository) string {
+func FilePath(r *http.Request, repository repo.Repository) string {
 	if strings.Contains(r.URL.Path, "../") {
 		return ""
 	}
 
-	if repository == primary {
+	if repository == repo.PrimaryRepository {
 		return "repositories/" + repository.Id + r.URL.Path
 	} else {
 		return "repositories/" + r.URL.Path

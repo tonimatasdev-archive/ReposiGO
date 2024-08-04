@@ -14,6 +14,7 @@ type Config struct {
 	CertFile     string       `json:"certFile"`
 	KeyFile      string       `json:"keyFile"`
 	Repositories []Repository `json:"repositories"`
+	Security     Security     `json:"security"`
 }
 
 type Repository struct {
@@ -22,7 +23,16 @@ type Repository struct {
 	Type string `json:"type"`
 }
 
-const configFile = "config.json"
+type Security struct {
+	Retries int `json:"retries"`
+	BanTime int `json:"banTime"`
+}
+
+const (
+	configFile = "config.json"
+)
+
+var ServerConfig Config
 
 func LoadConfig() (*Config, error) {
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
@@ -35,7 +45,12 @@ func LoadConfig() (*Config, error) {
 			Repositories: []Repository{
 				{"Releases", "releases", repo.Public},
 				{"Secret", "secret", repo.Secret},
-				{"Private", "private", repo.Private}},
+				{"Private", "private", repo.Private},
+			},
+			Security: Security{
+				Retries: 3,
+				BanTime: 30,
+			},
 		}
 
 		file, err := os.Create(configFile)
