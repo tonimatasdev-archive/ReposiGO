@@ -32,6 +32,10 @@ func BanHandler() {
 	for {
 		for entry, value := range Bans {
 			Bans[entry] = value - 1
+
+			if Bans[entry] <= 0 {
+				delete(Bans, entry)
+			}
 		}
 
 		time.Sleep(1 * time.Second)
