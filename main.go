@@ -24,7 +24,19 @@ func main() {
 
 	configuration.ServerConfig = *config
 
-	repo.InitRepositories()
+	for _, configRepository := range config.Repositories {
+		repository := repo.RepositoryInit(configRepository.Name, configRepository.Id, configRepository.Type)
+
+		if repository.Id == config.Primary {
+			repo.PrimaryRepository = repository
+		} else {
+			repo.Repositories = append(repo.Repositories, repository)
+		}
+	}
+
+	if repo.PrimaryRepository.Id != config.Primary {
+		log.Fatal("Primary repository not found.")
+	}
 
 	http.HandleFunc("/", handleRequest)
 
