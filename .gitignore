@@ -1,3 +1,4 @@
 repositories/
 config.json
+sessions.db
 .idea/
