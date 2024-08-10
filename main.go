@@ -55,7 +55,7 @@ func main() {
 			err = server.ListenAndServeTLS(config.CertFile, config.KeyFile)
 		}
 
-		if err != nil {
+		if err != nil && err.Error() != "http: Server closed" {
 			log.Fatal("Server starting error: ", err)
 			return
 		}
