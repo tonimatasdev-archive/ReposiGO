@@ -32,7 +32,7 @@ func saveSQLite(username string, hashedToken string, writeAccess string, readAcc
 		return err
 	}
 
-	_, err = db.Exec(`INSERT INTO sessions (username, token_hash, write_access, read_access) VALUES (?, ?)`, username, hashedToken, writeAccess, readAccess)
+	_, err = db.Exec(`INSERT INTO sessions (username, token_hash, write_access, read_access) VALUES (?, ?, ?, ?)`, username, hashedToken, writeAccess, readAccess)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func saveMySQLandMarianDB(dbConfig configuration.Database, username string, hash
 		return err
 	}
 
-	_, err = db.Exec(`INSERT INTO sessions (username, token_hash, write_access, read_access) VALUES (?, ?)`, username, hashedToken, writeAccess, readAccess)
+	_, err = db.Exec(`INSERT INTO sessions (username, token_hash, write_access, read_access) VALUES (?, ?, ?, ?)`, username, hashedToken, writeAccess, readAccess)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func savePostgreSQL(dbConfig configuration.Database, username string, hashedToke
 		return err
 	}
 
-	_, err = db.Exec(context.Background(), `INSERT INTO sessions (username, token_hash, write_access, read_access) VALUES ($1, $2)`, username, hashedToken, writeAccess, readAccess)
+	_, err = db.Exec(context.Background(), `INSERT INTO sessions (username, token_hash, write_access, read_access) VALUES ($1, $2, $3, $4)`, username, hashedToken, writeAccess, readAccess)
 	if err != nil {
 		return err
 	}
