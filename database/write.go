@@ -11,7 +11,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func saveSQLite(username string, hashedToken []byte, writeAccess string, readAccess string) error {
+func saveSQLite(username string, hashedToken string, writeAccess string, readAccess string) error {
 	db, err := sql.Open("sqlite", "file:sessions.db")
 	if err != nil {
 		return err
@@ -38,7 +38,7 @@ func saveSQLite(username string, hashedToken []byte, writeAccess string, readAcc
 	return nil
 }
 
-func saveMySQLandMarianDB(username string, hashedToken []byte, writeAccess string, readAccess string) error {
+func saveMySQLandMarianDB(username string, hashedToken string, writeAccess string, readAccess string) error {
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/dbname") // TODO: Add config
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func saveMySQLandMarianDB(username string, hashedToken []byte, writeAccess strin
 	return nil
 }
 
-func savePostgreSQL(username string, hashedToken []byte, writeAccess string, readAccess string) error {
+func savePostgreSQL(username string, hashedToken string, writeAccess string, readAccess string) error {
 	db, err := pgxpool.New(context.Background(), "postgres://username:password@localhost:5432/mydb") // TODO: Add config
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ type MongoSession struct {
 	ReadAccess  string `bson:"read_access"`
 }
 
-func saveMongoDB(username string, hashedToken []byte, writeAccess string, readAccess string) error {
+func saveMongoDB(username string, hashedToken string, writeAccess string, readAccess string) error {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017") // TODO: Add config
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
@@ -110,7 +110,7 @@ func saveMongoDB(username string, hashedToken []byte, writeAccess string, readAc
 
 	mongoSession := MongoSession{
 		Username:    username,
-		TokenHash:   string(hashedToken),
+		TokenHash:   hashedToken,
 		WriteAccess: writeAccess,
 		ReadAccess:  readAccess,
 	}

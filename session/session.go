@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"github.com/TonimatasDEV/ReposiGO/database"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"strings"
 )
@@ -12,7 +13,7 @@ var sessions = make(map[string]Session)
 
 type Session struct {
 	Username    string
-	Token       string
+	HashedToken string
 	ReadAccess  []string
 	WriteAccess []string
 }
@@ -20,7 +21,9 @@ type Session struct {
 func CreateSession(username string, readAccess []string, writeAccess []string) {
 	token, err := generateRandomToken(48)
 
-	if err != nil {
+	hashedToken, err1 := bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
+
+	if err != nil || err1 != nil {
 		log.Println("Error creating the session.")
 	} else {
 		value := sessions[username]
@@ -30,8 +33,8 @@ func CreateSession(username string, readAccess []string, writeAccess []string) {
 			return
 		}
 
-		sessions[username] = Session{username, token, readAccess, writeAccess}
-		err := database.SaveSession(username, token, strings.Join(writeAccess, ","), strings.Join(readAccess, ","))
+		sessions[username] = Session{username, string(hashedToken), readAccess, writeAccess}
+		err := database.SaveSession(username, string(hashedToken), strings.Join(writeAccess, ","), strings.Join(readAccess, ","))
 		if err != nil {
 			log.Println("Error saving the session in the database:", err)
 		}

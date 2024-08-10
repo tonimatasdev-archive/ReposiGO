@@ -3,7 +3,6 @@ package database
 import (
 	"errors"
 	_ "github.com/go-sql-driver/mysql"
-	"golang.org/x/crypto/bcrypt"
 	_ "modernc.org/sqlite"
 )
 
@@ -11,12 +10,7 @@ func DeleteSession(username string, token []byte, writeAccess string, readAccess
 	return nil
 }
 
-func SaveSession(username string, token string, writeAccess string, readAccess string) error {
-	hashedToken, err := bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-
+func SaveSession(username string, hashedToken string, writeAccess string, readAccess string) error {
 	switch "" {
 	case "sqlite":
 		return saveSQLite(username, hashedToken, writeAccess, readAccess)
