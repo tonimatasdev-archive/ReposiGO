@@ -3,8 +3,12 @@ package session
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"github.com/TonimatasDEV/ReposiGO/database"
 	"log"
+	"strings"
 )
+
+var sessions = make(map[string]Session)
 
 type Session struct {
 	Username    string
@@ -14,7 +18,7 @@ type Session struct {
 }
 
 func CreateSession(username string, readAccess []string, writeAccess []string) {
-	token, err := generateRandomToken(64)
+	token, err := generateRandomToken(48)
 
 	if err != nil {
 		log.Println("Error creating the session.")
@@ -27,6 +31,11 @@ func CreateSession(username string, readAccess []string, writeAccess []string) {
 		}
 
 		sessions[username] = Session{username, token, readAccess, writeAccess}
+		err := database.SaveSession(username, token, strings.Join(writeAccess, ","), strings.Join(readAccess, ","))
+		if err != nil {
+			log.Println("Error saving the session in the database:", err)
+		}
+
 		log.Println("Session \"" + username + "\" created successfully with the token \"" + token + "\".")
 	}
 }
