@@ -2,24 +2,27 @@ package database
 
 import (
 	"errors"
+	"github.com/TonimatasDEV/ReposiGO/configuration"
 	_ "github.com/go-sql-driver/mysql"
 	_ "modernc.org/sqlite"
 )
 
-func DeleteSession(username string, token []byte, writeAccess string, readAccess string) error {
+func DeleteSession(username string, hashedToken string, writeAccess string, readAccess string) error {
 	return nil
 }
 
 func SaveSession(username string, hashedToken string, writeAccess string, readAccess string) error {
-	switch "" {
+	dbConfig := configuration.ServerConfig.Database
+
+	switch dbConfig.Type {
 	case "sqlite":
 		return saveSQLite(username, hashedToken, writeAccess, readAccess)
 	case "mysql", "mariadb":
-		return saveMySQLandMarianDB(username, hashedToken, writeAccess, readAccess)
+		return saveMySQLandMarianDB(dbConfig, username, hashedToken, writeAccess, readAccess)
 	case "postgresql":
-		return savePostgreSQL(username, hashedToken, writeAccess, readAccess)
+		return savePostgreSQL(dbConfig, username, hashedToken, writeAccess, readAccess)
 	case "mongodb":
-		return saveMongoDB(username, hashedToken, writeAccess, readAccess)
+		return saveMongoDB(dbConfig, username, hashedToken, writeAccess, readAccess)
 	default:
 		return errors.New("invalid database type")
 	}

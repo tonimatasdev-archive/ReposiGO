@@ -3,12 +3,14 @@ package database
 import (
 	"context"
 	"database/sql"
+	"github.com/TonimatasDEV/ReposiGO/configuration"
 	"github.com/TonimatasDEV/ReposiGO/utils"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	_ "modernc.org/sqlite"
+	"strconv"
 )
 
 func saveSQLite(username string, hashedToken string, writeAccess string, readAccess string) error {
@@ -38,8 +40,8 @@ func saveSQLite(username string, hashedToken string, writeAccess string, readAcc
 	return nil
 }
 
-func saveMySQLandMarianDB(username string, hashedToken string, writeAccess string, readAccess string) error {
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/dbname") // TODO: Add config
+func saveMySQLandMarianDB(dbConfig configuration.Database, username string, hashedToken string, writeAccess string, readAccess string) error {
+	db, err := sql.Open("mysql", dbConfig.User+":"+dbConfig.Password+"@tcp("+dbConfig.Host+":"+strconv.Itoa(dbConfig.Port)+")/"+dbConfig.Name)
 	if err != nil {
 		return err
 	}
@@ -65,8 +67,8 @@ func saveMySQLandMarianDB(username string, hashedToken string, writeAccess strin
 	return nil
 }
 
-func savePostgreSQL(username string, hashedToken string, writeAccess string, readAccess string) error {
-	db, err := pgxpool.New(context.Background(), "postgres://username:password@localhost:5432/mydb") // TODO: Add config
+func savePostgreSQL(dbConfig configuration.Database, username string, hashedToken string, writeAccess string, readAccess string) error {
+	db, err := pgxpool.New(context.Background(), "postgres://"+dbConfig.User+":"+dbConfig.Password+"@"+dbConfig.Host+":"+strconv.Itoa(dbConfig.Port)+"/"+dbConfig.Name)
 	if err != nil {
 		return err
 	}
@@ -98,15 +100,16 @@ type MongoSession struct {
 	ReadAccess  string `bson:"read_access"`
 }
 
-func saveMongoDB(username string, hashedToken string, writeAccess string, readAccess string) error {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017") // TODO: Add config
+func saveMongoDB(dbConfig configuration.Database, username string, hashedToken string, writeAccess string, readAccess string) error {
+	clientOptions := options.Client().ApplyURI("mongodb://" + dbConfig.User + ":" + dbConfig.Password + "@" + dbConfig.Host + ":" + strconv.Itoa(dbConfig.Port))
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		return err
 	}
+
 	defer utils.MongoDBDisconnectError(client)
 
-	collection := client.Database("mydb").Collection("sessions") // TODO: Add config
+	collection := client.Database(dbConfig.Name).Collection("sessions")
 
 	mongoSession := MongoSession{
 		Username:    username,
