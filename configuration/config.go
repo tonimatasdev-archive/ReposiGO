@@ -15,7 +15,6 @@ type Config struct {
 	KeyFile      string       `json:"keyFile"`
 	Repositories []Repository `json:"repositories"`
 	Security     Security     `json:"security"`
-	Database     Database     `json:"database"`
 }
 
 type Repository struct {
@@ -27,15 +26,6 @@ type Repository struct {
 type Security struct {
 	Retries int `json:"retries"`
 	BanTime int `json:"banTime"`
-}
-
-type Database struct {
-	Type     string `json:"type"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-	Name     string `json:"database"`
 }
 
 const (
@@ -60,14 +50,6 @@ func LoadConfig() (*Config, error) {
 			Security: Security{
 				Retries: 3,
 				BanTime: 30,
-			},
-			Database: Database{
-				Type:     "sqlite",
-				Host:     "none",
-				Port:     3306,
-				User:     "none",
-				Password: "none",
-				Name:     "none",
 			},
 		}
 

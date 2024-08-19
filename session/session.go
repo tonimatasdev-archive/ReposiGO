@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"golang.org/x/crypto/bcrypt"
 	"log"
-	"strings"
 )
 
 var sessions = make(map[string]Session)
@@ -33,10 +32,10 @@ func CreateSession(username string, readAccess []string, writeAccess []string) {
 		}
 
 		sessions[username] = Session{username, string(hashedToken), readAccess, writeAccess}
-		err := saveSession(username, string(hashedToken), strings.Join(writeAccess, ","), strings.Join(readAccess, ","))
-		if err != nil {
-			log.Println("Error saving the session in the database:", err)
-		}
+		//err := saveSession(username, string(hashedToken), strings.Join(writeAccess, ","), strings.Join(readAccess, ","))
+		//if err != nil {
+		//	log.Println("Error saving the session in the database:", err)
+		//}
 
 		log.Println("Session \"" + username + "\" created successfully with the token \"" + token + "\".")
 	}
@@ -54,21 +53,7 @@ func DeleteSession(username string) {
 }
 
 func ReadSessions() {
-	log.Println("Reading sessions")
 
-	rawSessions, err := readSessions()
-
-	if rawSessions == nil || len(rawSessions) == 0 {
-		log.Println("No sessions to read.")
-		return
-	}
-
-	if err != nil {
-		log.Println("Error reading sessions", err)
-		return
-	}
-
-	sessions = rawSessions
 }
 
 func generateRandomToken(n int) (string, error) {
