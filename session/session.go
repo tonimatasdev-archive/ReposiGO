@@ -3,7 +3,6 @@ package session
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"github.com/TonimatasDEV/ReposiGO/database"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"strings"
@@ -34,7 +33,7 @@ func CreateSession(username string, readAccess []string, writeAccess []string) {
 		}
 
 		sessions[username] = Session{username, string(hashedToken), readAccess, writeAccess}
-		err := database.SaveSession(username, string(hashedToken), strings.Join(writeAccess, ","), strings.Join(readAccess, ","))
+		err := saveSession(username, string(hashedToken), strings.Join(writeAccess, ","), strings.Join(readAccess, ","))
 		if err != nil {
 			log.Println("Error saving the session in the database:", err)
 		}
@@ -50,7 +49,26 @@ func DeleteSession(username string) {
 		log.Println("Session", "\""+username+"\"", "not found.")
 	} else {
 		delete(sessions, username)
+		log.Println("Session", "\""+username+"\"", "deleted.")
 	}
+}
+
+func ReadSessions() {
+	log.Println("Reading sessions")
+
+	rawSessions, err := readSessions()
+
+	if rawSessions == nil || len(rawSessions) == 0 {
+		log.Println("No sessions to read.")
+		return
+	}
+
+	if err != nil {
+		log.Println("Error reading sessions", err)
+		return
+	}
+
+	sessions = rawSessions
 }
 
 func generateRandomToken(n int) (string, error) {

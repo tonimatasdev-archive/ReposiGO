@@ -13,7 +13,8 @@ import (
 	"strconv"
 )
 
-func saveSQLite(username string, hashedToken string, writeAccess string, readAccess string) error {
+//goland:noinspection SqlNoDataSourceInspection
+func SaveSQLite(username string, hashedToken string, writeAccess string, readAccess string) error {
 	db, err := sql.Open("sqlite", "file:sessions.db")
 	if err != nil {
 		return err
@@ -40,7 +41,8 @@ func saveSQLite(username string, hashedToken string, writeAccess string, readAcc
 	return nil
 }
 
-func saveMySQLandMarianDB(dbConfig configuration.Database, username string, hashedToken string, writeAccess string, readAccess string) error {
+//goland:noinspection SqlNoDataSourceInspection
+func SaveMySQLandMarianDB(dbConfig configuration.Database, username string, hashedToken string, writeAccess string, readAccess string) error {
 	db, err := sql.Open("mysql", dbConfig.User+":"+dbConfig.Password+"@tcp("+dbConfig.Host+":"+strconv.Itoa(dbConfig.Port)+")/"+dbConfig.Name)
 	if err != nil {
 		return err
@@ -67,7 +69,8 @@ func saveMySQLandMarianDB(dbConfig configuration.Database, username string, hash
 	return nil
 }
 
-func savePostgreSQL(dbConfig configuration.Database, username string, hashedToken string, writeAccess string, readAccess string) error {
+//goland:noinspection SqlNoDataSourceInspection
+func SavePostgresql(dbConfig configuration.Database, username string, hashedToken string, writeAccess string, readAccess string) error {
 	db, err := pgxpool.New(context.Background(), "postgres://"+dbConfig.User+":"+dbConfig.Password+"@"+dbConfig.Host+":"+strconv.Itoa(dbConfig.Port)+"/"+dbConfig.Name)
 	if err != nil {
 		return err
@@ -100,7 +103,7 @@ type MongoSession struct {
 	ReadAccess  string `bson:"read_access"`
 }
 
-func saveMongoDB(dbConfig configuration.Database, username string, hashedToken string, writeAccess string, readAccess string) error {
+func SaveMongoDB(dbConfig configuration.Database, username string, hashedToken string, writeAccess string, readAccess string) error {
 	clientOptions := options.Client().ApplyURI("mongodb://" + dbConfig.User + ":" + dbConfig.Password + "@" + dbConfig.Host + ":" + strconv.Itoa(dbConfig.Port))
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {

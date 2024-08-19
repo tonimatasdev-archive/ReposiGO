@@ -46,6 +46,8 @@ func main() {
 		Handler: nil,
 	}
 
+	session.ReadSessions()
+
 	go func() {
 		var err error
 
