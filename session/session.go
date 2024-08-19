@@ -10,19 +10,19 @@ import (
 var sessions = make(map[string]Session)
 
 type Session struct {
-	Username    string
-	HashedToken string
-	ReadAccess  []string
-	WriteAccess []string
+	Username    string   `json:"username"`
+	HashedToken string   `json:"hashedToken"`
+	ReadAccess  []string `json:"readAccess"`
+	WriteAccess []string `json:"writeAccess"`
 }
 
 func CreateSession(username string, readAccess []string, writeAccess []string) {
-	token, err := generateRandomToken(48)
+	token, err := generateRandomToken(54)
 
 	hashedToken, err1 := bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
 
 	if err != nil || err1 != nil {
-		log.Println("Error creating the session.")
+		log.Println("Error creating the session", err, err1)
 	} else {
 		value := sessions[username]
 
@@ -32,10 +32,7 @@ func CreateSession(username string, readAccess []string, writeAccess []string) {
 		}
 
 		sessions[username] = Session{username, string(hashedToken), readAccess, writeAccess}
-		//err := saveSession(username, string(hashedToken), strings.Join(writeAccess, ","), strings.Join(readAccess, ","))
-		//if err != nil {
-		//	log.Println("Error saving the session in the database:", err)
-		//}
+		saveSessions()
 
 		log.Println("Session \"" + username + "\" created successfully with the token \"" + token + "\".")
 	}
@@ -48,12 +45,9 @@ func DeleteSession(username string) {
 		log.Println("Session", "\""+username+"\"", "not found.")
 	} else {
 		delete(sessions, username)
+		saveSessions()
 		log.Println("Session", "\""+username+"\"", "deleted.")
 	}
-}
-
-func ReadSessions() {
-
 }
 
 func generateRandomToken(n int) (string, error) {

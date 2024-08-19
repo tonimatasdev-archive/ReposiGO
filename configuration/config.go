@@ -28,9 +28,7 @@ type Security struct {
 	BanTime int `json:"banTime"`
 }
 
-const (
-	configFile = "config.json"
-)
+const configFile = "config.json"
 
 var ServerConfig Config
 
@@ -59,7 +57,7 @@ func LoadConfig() (*Config, error) {
 			return nil, err
 		}
 
-		defer utils.FileError(file)
+		defer utils.CloseFileError(file)
 
 		encoder := json.NewEncoder(file)
 		encoder.SetIndent("", "  ")
@@ -76,7 +74,7 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	defer utils.FileError(file)
+	defer utils.CloseFileError(file)
 
 	var config Config
 	decoder := json.NewDecoder(file)

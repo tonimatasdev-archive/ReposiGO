@@ -46,8 +46,6 @@ func main() {
 		Handler: nil,
 	}
 
-	session.ReadSessions()
-
 	go func() {
 		var err error
 
@@ -64,6 +62,8 @@ func main() {
 	}()
 
 	log.Println("Server listening on port " + portStr + ".")
+
+	session.ReadSessions()
 
 	go session.BanHandler()
 
@@ -129,7 +129,7 @@ func handlePut(w http.ResponseWriter, r *http.Request, repository repo.Repositor
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer utils.FileError(file)
+	defer utils.CloseFileError(file)
 
 	_, err = io.Copy(file, r.Body)
 	if err != nil {
@@ -156,7 +156,7 @@ func handleGet(w http.ResponseWriter, r *http.Request, repository repo.Repositor
 		}
 		return
 	}
-	defer utils.FileError(file)
+	defer utils.CloseFileError(file)
 
 	http.ServeFile(w, r, filePath)
 }

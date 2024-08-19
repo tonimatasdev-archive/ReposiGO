@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func FileError(file *os.File) {
+func CloseFileError(file *os.File) {
 	err := file.Close()
 	if err != nil {
 		log.Println("Error closing file", file.Name(), ":", err)
